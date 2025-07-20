@@ -1,15 +1,15 @@
 const formulario = document.getElementById('formulario');
-const inputs = document.querySelectorAll('#formulario input');
+const inputs = document.querySelectorAll('#formulario input, #formulario select');
 
 const expresiones = {
     nombre: /^[a-zA-ZÀ-ÿ\s]{1,18}$/,
     apellido_paterno: /^[a-zA-ZÀ-ÿ\s]{1,18}$/,
     apellido_materno: /^[a-zA-ZÀ-ÿ\s]{1,18}$/,
-    correo: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.com$/,
+    correo: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.com$/, // corregí la expresión con el punto escapado
     password: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$/,
     confirm_password: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$/,
-    seccion: /^[1-9]+$/,
-    calle: /^[1-9]+$/
+    seccion: /^[1-9][0-9]*$/, // Números mayores que cero
+    calle: /^[1-9][0-9]*$/
 };
 
 const campos = {
@@ -19,7 +19,7 @@ const campos = {
     correo: false,
     password: false,
     confirm_password: false,
-    seccion:false,
+    seccion: false,
     calle: false
 };
 
@@ -36,13 +36,13 @@ const validarCampo = (expresion, input, campo) => {
 };
 
 const validarSelects = () => {
-    const seccionSelect = document.getElementById('seccion1');
-    const calleSelect = document.getElementById('calles');
+    const seccionSelect = document.getElementById('seccion');
+    const calleSelect = document.getElementById('calle');
     const grupoSelect = document.getElementById('group_seleccion');
-    
+
     const seccionValida = expresiones.seccion.test(seccionSelect.value);
     const calleValida = expresiones.calle.test(calleSelect.value);
-    
+
     if (seccionValida && calleValida) {
         grupoSelect.classList.remove('formulario_grupo-incorrecto');
         grupoSelect.classList.add('formulario_grupo-correcto');
@@ -56,14 +56,10 @@ const validarSelects = () => {
     }
 };
 
-
-
-
-// Función para validar que las contraseñas coincidan
 const validarPassword2 = () => {
     const inputPassword1 = document.getElementById('password');
     const inputPassword2 = document.getElementById('confirm_password');
-    
+
     if (inputPassword1.value !== inputPassword2.value) {
         document.getElementById('group_confirm_password').classList.add('formulario_grupo-incorrecto');
         document.getElementById('group_confirm_password').classList.remove('formulario_grupo-correcto');
@@ -96,51 +92,47 @@ const validarFormulario = (e) => {
         case "confirm_password":
             validarPassword2();
             break;
-        case "seleccion":
-            validarSelects();
-            break;
         case "seccion":
+        case "calle":
             validarSelects();
             break;
-
     }
 };
 
-inputs.forEach((input) => {
+inputs.forEach(input => {
     input.addEventListener('keyup', validarFormulario);
     input.addEventListener('blur', validarFormulario);
 });
 
-// Manejar el envío del formulario
+// Además agrega validación al cambiar selects
+document.getElementById('seccion').addEventListener('change', validarFormulario);
+document.getElementById('calle').addEventListener('change', validarFormulario);
+
 formulario.addEventListener('submit', (e) => {
     e.preventDefault();
-  
+
+    validarSelects(); // validar selects en submit también
+
     const todosCamposValidos = Object.values(campos).every(campo => campo === true);
-    
+
     if (todosCamposValidos) {
-    
         document.getElementById('formulario_mensaje').classList.remove('formulario_mensaje-activo');
         document.getElementById('formulario_mensaje_exito').classList.add('formulario-mensaje-exito-activo');
-        document.getElementById('seccion1').addEventListener('change', validarSelects);
-        document.getElementById('calles').addEventListener('change', validarSelects);
 
         setTimeout(() => {
             formulario.reset();
-            // Limpiar todas las clases de validación
-            inputs.forEach(input => {
-                const campo = input.name;
-                document.getElementById(`group_${campo}`).classList.remove('formulario_grupo-correcto', 'formulario_grupo-incorrecto');
+            // Limpiar clases
+            Object.keys(campos).forEach(campo => {
+                const group = document.getElementById(`group_${campo}`);
+                if (group) group.classList.remove('formulario_grupo-correcto', 'formulario_grupo-incorrecto');
                 campos[campo] = false;
             });
             document.getElementById('formulario_mensaje_exito').classList.remove('formulario-mensaje-exito-activo');
         }, 3000);
-        
     } else {
-
         document.getElementById('formulario_mensaje').classList.add('formulario_mensaje-activo');
-        
         document.getElementById('formulario_mensaje_exito').classList.remove('formulario-mensaje-exito-activo');
-        
+
         inputs.forEach(input => {
             if (input.value.trim() !== '') {
                 validarFormulario({ target: input });
@@ -148,6 +140,3 @@ formulario.addEventListener('submit', (e) => {
         });
     }
 });
-
-const selec = document.getElementById("seccion1")
-

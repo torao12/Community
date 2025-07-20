@@ -41,23 +41,27 @@
             <form class="formulario" id="formulario" method="POST" action="/Registrar">
 
                <div class="formulario_grupo" id="group_seleccion">
-                    <div class="formulario_select">
-                        <select name="seccion" id="seccion">
-                            <option value="0" selected>sección</option>
-                          <div class="formulario_validacion-estado" id="seccion_estado">
-                             <p class="input-error">selecciona una sección</p>
-                          </div>
-                        </select>
-                        <select name="calle" id="calle" >
-                            <option value="1">calle</option>
-                            <div class="formulario_validacion-estado" id="calle_estado">
-                             <p class="input-error">selecciona una calle</p>
-                           </div>
-                        </select>
-                        
+                <div class="formulario_select">
+
+                    <select name="seccion" id="seccion" class="formulario_input">
+                    <option value="" selected disabled>Seleccione una sección</option>
+                    <!-- Opciones se cargan dinámicamente -->
+                    </select>
+                    <div class="formulario_validacion-estado" id="seccion_estado">
+                    <p class="input-error">Selecciona una sección</p>
                     </div>
+
+                    <select name="calle" id="calle" class="formulario_input">
+                    <option value="" selected disabled>Primero selecciona una sección</option>
+                    <!-- Opciones se cargan dinámicamente -->
+                    </select>
+                    <div class="formulario_validacion-estado" id="calle_estado">
+                    <p class="input-error">Selecciona una calle</p>
+                    </div>
+
                 </div>
-               
+                </div>
+                
                 <div class="formulario_grupo" id="group_nombre">
                     <div class="formulario_input">
                         <i class="fa-solid fa-user"></i>
