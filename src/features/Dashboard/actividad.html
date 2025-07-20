@@ -28,28 +28,23 @@
         <section class="stats-grid">
             <div class="stat-card">
                 <p class="stat-title">Total de reportes</p>
-                <p class="stat-number">118</p>
-                <p class="stat-description">10% mas que la semana pasada</p>
+                <p id="total-reportes" class="stat-number">Cargando...</p>
+                <p class="stat-description">10% más que la semana pasada</p>
             </div>
+
             <div class="stat-card">
                 <p class="stat-title">Reportes atendidos</p>
-                <p class="stat-number">78</p>
+                <p id="reportes-atendidos" class="stat-number">Cargando...</p>
             </div>
             <div class="stat-card">
                 <p class="stat-title">Tiempo en resolver</p>
-                <p class="stat-number">156</p>
-                <p class="stat-description">Promedio de: 2 Horas por reporte</p>
+                <p id="tiempo-resolver" class="stat-number">Cargando...</p>
+                <p id="tiempo-descripcion" class="stat-description">Promedio de: -- Horas por reporte</p>
             </div>
         </section>
 
         <section class="chart-container">
             <div class="chart-header">
-                <div class="chart-filter">
-                    <select class="filter-display" id="filter-select">
-                        <option value="Incident">Incidente</option>
-                        <option value="Section">Sección</option>
-                    </select>
-                </div>
                 <h2 class="chart-title">Gráfica de Reportes</h2>
             </div>
             <div class="chart-area">
@@ -72,7 +67,7 @@
             </div>
         </section>
     </main>
-
+    <script src="../Dashboard/obtenertotalAPI.js"></script>
     <script src="../Dashboard/actividadAPI.js"></script>
     <script src="../Dashboard/index.js"></script>
 </body>

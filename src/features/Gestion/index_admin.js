@@ -1,93 +1,4 @@
-// --- Crear y Eliminar Avisos ---
-    const createNoticeBtn = document.getElementById('create-notice-btn');
-    const createNoticeModal = document.getElementById('crear-anuncio');
-    const createNoticeForm = document.getElementById('crear-anuncio-form');
-    const avisosGrid = document.getElementById('avisos-grid');
-    const deleteConfirmModal = document.getElementById('delete-confirm-modal');
-    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-    let cardToDelete = null;
-
-    // Abrir modal de crear aviso
-    if (createNoticeBtn && createNoticeModal) {
-        createNoticeBtn.addEventListener('click', () => {
-            createNoticeModal.classList.add('show');
-        });
-    }
-
-    // Crear aviso
-    if (createNoticeForm && avisosGrid && createNoticeModal) {
-        createNoticeForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const title = document.getElementById('notice-title').value.trim();
-            const description = document.getElementById('notice-description').value.trim();
-            if (title === '' || description === '') {
-                showToast('Por favor, completa todos los campos.', 'error');
-                return;
-            }
-            const newNoticeCard = document.createElement('div');
-            newNoticeCard.className = 'col-12 col-md-6 col-lg-4';
-            newNoticeCard.dataset.category = 'General';
-            newNoticeCard.dataset.title = title;
-            newNoticeCard.innerHTML = `
-                <div class="card notice-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fa-solid fa-user-shield notice-author-icon"></i>
-                            <span class="notice-author">Administrador</span>
-                        </div>
-                        <h5 class="card-title">${title}</h5>
-                        <p class="card-text">${description} <a href="#">Leer más</a></p>
-                    </div>
-                    <div class="card-footer notice-card-footer">
-                        <div class="d-flex align-items-center text-muted">
-                            <i class="fa-regular fa-calendar me-2"></i>
-                            <small>${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</small>
-                        </div>
-                        <button class="btn btn-icon btn-icon-danger delete-notice-btn"><i class="fa-regular fa-trash-can"></i></button>
-                    </div>
-                </div>
-            `;
-            avisosGrid.prepend(newNoticeCard);
-            createNoticeForm.reset();
-            createNoticeModal.classList.remove('show');
-            showToast('Aviso enviado con éxito', 'success');
-        });
-    }
-
-    // Eliminar aviso (delegación de eventos)
-    if (avisosGrid && deleteConfirmModal) {
-        avisosGrid.addEventListener('click', (event) => {
-            const deleteButton = event.target.closest('.delete-notice-btn');
-            if (deleteButton) {
-                cardToDelete = deleteButton.closest('.col-12');
-                deleteConfirmModal.classList.add('show');
-            }
-        });
-    }
-
-    // Confirmar borrado de aviso
-    if (confirmDeleteBtn && deleteConfirmModal) {
-        confirmDeleteBtn.addEventListener('click', () => {
-            if (cardToDelete) {
-                cardToDelete.remove();
-                cardToDelete = null;
-                deleteConfirmModal.classList.remove('show');
-                showToast('Eliminación completada', 'success');
-            }
-        });
-    }
-
-    // Cerrar todos los modales (botón cerrar o clic fuera)
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-        modal.querySelectorAll('.btn.btn-secondary.w-100.close-modal-btn').forEach(btn => {
-            btn.addEventListener('click', () => modal.classList.remove('show'));
-        });
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) modal.classList.remove('show');
-        });
-    });
-
-    // --- Datos de ejemplo para ambas gráficas ---
+ // --- Datos de ejemplo para ambas gráficas ---
     const chartData = {
         Incident: {
             labels: [
@@ -98,15 +9,6 @@
                 "#1CA1C1", "#1DC6E6", "#1FC8E6", "#4DD7A7", "#7BE495", "#F7D774", "#F7B801"
             ]
         },
-        Section: {
-            labels: [
-                "Sección 1", "Sección 2", "Sección 3", "Sección 4"
-            ],
-            values: [22, 18, 25, 15],
-            colors: [
-                "#596CFF", "#32C4C4", "#55D4B4", "#A0DD9F"
-            ]
-        }
     };
 
     // --- Función para renderizar la gráfica ---
@@ -139,14 +41,6 @@
         });
     }
 
-    // --- Evento para cambiar entre Incidente y Sección ---
-    const filterSelect = document.getElementById("filter-select");
-    if (filterSelect) {
-        renderBarChart(filterSelect.value);
-        filterSelect.addEventListener("change", (e) => {
-            renderBarChart(e.target.value);
-        });
-    }
 
 
 
