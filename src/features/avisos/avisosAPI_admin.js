@@ -101,9 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <i class="fa-regular fa-calendar me-2"></i>
                                 <small>${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</small>
                             </div>
-                            <button class="btn btn-icon btn-icon-danger delete-notice-btn">
-                                <i class="fa-regular fa-trash-can"></i>
-                            </button>
+
                         </div>
                     </div>
                 `;
@@ -116,53 +114,93 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error de red:', error);
                 mostrarAlerta('No se pudo conectar con el servidor.', 'error');
             }
+
+            // Refrescar después de 1.5 segundos
+            setTimeout(() => {
+              location.reload();
+            }, 1500);
         });
     }
 });
 
 
+
+
+
+
+//funcion para mostrar los reportes
 async function cargarAnuncios() {
-    const container = document.getElementById('avisos-grid');
-    container.innerHTML = ''; // Limpiar contenido previo
+  const container = document.getElementById('avisos-grid');
+  container.innerHTML = ''; // Limpiar
 
-    try {
-        const response = await fetch('http://107.22.248.129:7001/mensajes-admin');
-        if (!response.ok) throw new Error('Error al obtener los anuncios');
-        const anuncios = await response.json();
+  try {
+    const response = await fetch('http://107.22.248.129:7001/mensajes-admin');
+    if (!response.ok) throw new Error('Error al obtener los anuncios');
+    const anuncios = await response.json();
 
-        anuncios.forEach(anuncio => {
-            const { titulo, contenido } = anuncio; // Ajusta si los nombres son diferentes
+    // Ordenar por fecha descendente (más reciente primero)
+    anuncios.sort((a, b) => {
+      const fechaA = new Date(a.fecha || a.createdAt || 0).getTime();
+      const fechaB = new Date(b.fecha || b.createdAt || 0).getTime();
+      return fechaB - fechaA; // Descendente
+    });
 
-            const cardHTML = `
-                <div class="col-md-4">
-                    <div class="card notice-card h-100">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="fa-solid fa-user-shield notice-author-icon"></i>
-                                <span class="notice-author">Administrador</span>
-                            </div>
-                            <h5 class="card-title">${titulo}</h5>
-                            <p class="card-text">${contenido} <a href="#">Leer más</a></p>
-                        </div>
-                        <div class="card-footer notice-card-footer">
-                            <div class="d-flex align-items-center text-muted">
-                                <i class="fa-regular fa-calendar me-2"></i>
-                                <small>${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</small>
-                            </div>
-                            <button class="btn btn-icon btn-icon-danger delete-notice-btn">
-                                <i class="fa-regular fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
+    anuncios.forEach(anuncio => {
+      console.log('Estructura del anuncio:', anuncio);
 
-            container.insertAdjacentHTML('beforeend', cardHTML);
-        });
-    } catch (error) {
-        console.error('Error cargando los anuncios:', error);
-        container.innerHTML = '<p>No se pudieron cargar los anuncios.</p>';
-    }
+      const idAviso = anuncio.id ?? anuncio.id_mensaje ?? anuncio.id_aviso ?? null;
+      if (!idAviso) {
+        console.warn('No se encontró ID para el aviso:', anuncio);
+        return; // Saltar este anuncio si no tiene id
+      }
+
+      const nombreAdmin = anuncio.admin?.nombre || anuncio.nombre_admin || 'Administrador';
+
+      const fechaRaw = anuncio.fecha || anuncio.createdAt || anuncio.fecha_creacion || null;
+
+      let fechaMostrar = 'Fecha no disponible';
+
+      if (fechaRaw) {
+        const fechaObj = new Date(fechaRaw);
+        if (!isNaN(fechaObj)) {
+          fechaMostrar = fechaObj.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          });
+        }
+      }
+
+      const cardHTML = `
+        <div class="col-md-4">
+          <div class="card notice-card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fa-solid fa-user-shield notice-author-icon"></i>
+                <span class="notice-author">${nombreAdmin}</span>
+              </div>
+              <h5 class="card-title">${anuncio.titulo}</h5>
+              <p class="card-text">${anuncio.contenido} <a href="#">Leer más</a></p>
+            </div>
+            <div class="card-footer notice-card-footer">
+              <div class="d-flex align-items-center text-muted">
+                <i class="fa-regular fa-calendar me-2"></i>
+                <small>${fechaMostrar}</small>
+              </div>
+              <button class="btn btn-icon btn-icon-danger delete-notice-btn" data-id="${idAviso}">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.insertAdjacentHTML('afterbegin', cardHTML);
+    });
+  } catch (error) {
+    console.error('Error cargando los anuncios:', error);
+    container.innerHTML = '<p>No se pudieron cargar los anuncios.</p>';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', cargarAnuncios);

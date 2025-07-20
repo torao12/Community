@@ -196,5 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('❌ Error al enviar el reporte:', err);
       alert('❌ No se pudo enviar el reporte. Revisa la consola.');
     }
+
+    // Refrescar después de 1.5 segundos
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
   });
 });

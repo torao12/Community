@@ -1,5 +1,6 @@
 import { initializeReportPagination } from "./controllers/reportesController.js";
-//visualizar los reportes como usuario
+
+// Visualizar los reportes como usuario
 document.addEventListener('DOMContentLoaded', async () => {
   const contenedorReportes = document.getElementById('reports-grid');
   const idUsuario = localStorage.getItem('id_usuario');
@@ -20,24 +21,34 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Obtener secciones para reemplazar id_ubicacion por nombre
-    const seccionesResponse = await fetch('http://107.22.248.129:7001/secciones');
-    if (!seccionesResponse.ok) throw new Error('Error al obtener secciones');
-    const seccionesData = await seccionesResponse.json();
+    // Obtener todas las calles (ubicaciones) con su id_seccion
+    const callesRes = await fetch('http://107.22.248.129:7001/calles');
+    if (!callesRes.ok) throw new Error('Error al obtener ubicaciones');
+    const calles = await callesRes.json();
 
-    // Crear diccionario de secciones
-    const secciones = {};
-    seccionesData.forEach(sec => {
-      secciones[sec.id_seccion] = sec.nombre_seccion;
+    // Obtener todas las secciones con su nombre
+    const seccionesRes = await fetch('http://107.22.248.129:7001/secciones');
+    if (!seccionesRes.ok) throw new Error('Error al obtener secciones');
+    const secciones = await seccionesRes.json();
+
+    // Mapeo: id_ubicacion => id_seccion
+    const ubicacionASeccion = {};
+    calles.forEach(calle => {
+      ubicacionASeccion[calle.id_ubicacion] = calle.id_seccion;
     });
 
-    // Estados de los reportes
+    // Mapeo: id_seccion => nombre
+    const seccionANombre = {};
+    secciones.forEach(seccion => {
+      seccionANombre[seccion.id_seccion] = seccion.nombre || `Sección ${seccion.id_seccion}`;
+    });
+
+    // Estados e incidentes
     const estados = {
       1: 'Pendiente',
       2: 'Resuelto',
     };
 
-    // Tipos de incidente
     const incidentes = {
       1: "Ruido excesivo",
       2: "Problema de alcohol",
@@ -51,7 +62,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     contenedorReportes.innerHTML = '';
 
     reportes.forEach(rep => {
-      // Filtrar solo reportes activos (puedes ajustar a tu campo real como rep.activo o rep.estado === 1)
       if (!rep.activo && rep.activo !== undefined) return;
 
       const fecha = new Date(rep.fecha_creacion).toLocaleDateString('es-MX', {
@@ -68,7 +78,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         ? `${rep.descripcion.substring(0, 100)}...`
         : rep.descripcion;
 
-      const nombreSeccion = secciones[rep.id_seccion] || 'Sección desconocida';
+      // Obtener id_seccion desde id_ubicacion, y luego el nombre
+      const idSeccion = ubicacionASeccion[rep.id_ubicacion];
+      const nombreSeccion = seccionANombre[idSeccion] || 'Sección desconocida';
       const tipoIncidente = incidentes[rep.id_tipo] || 'Tipo desconocido';
 
       const articulo = document.createElement('article');
@@ -95,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       contenedorReportes.appendChild(articulo);
     });
 
-    // Modal para descripción completa
+    // Modal para leer más
     if (!document.getElementById('modal-leer-mas')) {
       const modal = document.createElement('div');
       modal.id = 'modal-leer-mas';
@@ -115,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // Activar modal leer más
+    // Activar modal
     document.querySelectorAll('.read-more').forEach(link => {
       link.addEventListener('click', e => {
         e.preventDefault();

@@ -153,3 +153,144 @@ confirmDeleteBtn.addEventListener('click', () => {
         });
     }
 })
+
+
+
+
+
+
+
+
+
+
+//aside para ver el reporte completo
+document.addEventListener('DOMContentLoaded', () => {
+  // Asegúrate de que estos IDs existan en tu HTML.
+  // 'report-container' es el elemento que contendrá todas las filas de reportes.
+  const contenedor = document.getElementById('report-container');
+  const reportsPanel = document.getElementById('reports-panel');
+  const closeReportsBtn = document.getElementById('close-reports-btn');
+
+  // Función para abrir el panel lateral.
+  const openPanel = () => reportsPanel.classList.add('is-visible');
+  // Función para cerrar el panel lateral.
+  const closePanel = () => reportsPanel.classList.remove('is-visible');
+
+  // Asigna el evento de clic para cerrar el panel con el botón.
+  if (closeReportsBtn) {
+    closeReportsBtn.addEventListener('click', closePanel);
+  }
+
+  // Permite cerrar el panel presionando la tecla 'Escape'.
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && reportsPanel.classList.contains('is-visible')) {
+      closePanel();
+    }
+  });
+
+  // Carga y muestra los reportes en la tabla.
+  fetch('http://107.22.248.129:7001/reportes')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(reportes => {
+      if (!contenedor) {
+        console.error("El elemento contenedor 'report-container' no fue encontrado.");
+        return;
+      }
+      contenedor.innerHTML = ''; // Limpia el contenedor antes de añadir nuevos elementos.
+
+      reportes.forEach(reporte => {
+        const fila = document.createElement('div');
+        fila.className = 'report-row';
+
+        // --- CORRECCIÓN CLAVE ---
+        // Se movió la clase 'show-reports-btn' y el atributo 'data-id' al <button>.
+        // Esto asegura que el clic se capture correctamente en todo el botón.
+        fila.innerHTML = `
+          <button class="btn btn-secondary show-reports-btn" data-id="${reporte.id}">
+            <div class="report-id">${reporte.codigo}</div>
+          </button>
+          <div>${reporte.autor}</div>
+          <div class="status-cell">
+            <span class="status-badge status-${reporte.estado.toLowerCase().replace(/\s/g, '-')}">${reporte.estado}</span>
+          </div>
+          <div>${reporte.tipo}</div>
+          <div><span class="urgency-badge urgency-${reporte.urgencia.toLowerCase()}">${reporte.urgencia}</span></div>
+          <div>${reporte.calle}</div>
+          <div>${reporte.seccion}</div>
+          <div class="action-cell">
+            <select class="form-select form-select-sm status-select" data-id="${reporte.id}">
+              <option value="Pendiente" ${reporte.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+              <option value="En proceso" ${reporte.estado === 'En proceso' ? 'selected' : ''}>En proceso</option>
+              <option value="Resuelto" ${reporte.estado === 'Resuelto' ? 'selected' : ''}>Resuelto</option>
+            </select>
+            <button class="btn btn-icon delete-report-btn" data-id="${reporte.id}">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+          </div>
+        `;
+
+        contenedor.appendChild(fila);
+      });
+    })
+    .catch(error => {
+      console.error('Error al cargar los reportes:', error);
+      if (contenedor) {
+        contenedor.innerHTML = '<p class="text-danger">No se pudieron cargar los reportes. Intente de nuevo más tarde.</p>';
+      }
+    });
+
+  // Escucha los clics en el contenedor para abrir el reporte completo en el panel.
+  // Es más eficiente que escuchar en todo el 'document'.
+  if (contenedor) {
+    contenedor.addEventListener('click', function (e) {
+      // Usa .closest() para encontrar el botón sin importar si se hizo clic en el icono o el botón mismo.
+      const target = e.target.closest('.show-reports-btn');
+      if (target) {
+        const id = target.getAttribute('data-id');
+        if (!id) return; // Salir si no hay ID.
+
+        fetch(`http://107.22.248.129:7001/reportes/${id}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(reporte => {
+            // Inserta los datos del reporte en el panel lateral.
+            document.getElementById('report-author').textContent = reporte.autor || 'Sin autor';
+
+            const estadoSpan = document.querySelector('.panel-status span.status-badge');
+            if(estadoSpan) {
+              estadoSpan.textContent = reporte.estado || 'Sin estado';
+              estadoSpan.className = `status-badge status-${(reporte.estado || 'default').toLowerCase().replace(/\s/g, '-')}`;
+            }
+
+            const urgenciaSpan = document.querySelector('.panel-urgency span.urgency-badge');
+            if(urgenciaSpan) {
+              urgenciaSpan.textContent = reporte.urgencia || 'Sin urgencia';
+              urgenciaSpan.className = `urgency-badge urgency-${(reporte.urgencia || 'default').toLowerCase()}`;
+            }
+
+            document.getElementById('report-type').textContent = reporte.tipo || 'Sin tipo';
+            document.getElementById('report-location').textContent = reporte.calle || 'Sin ubicación';
+            document.getElementById('report-section').textContent = reporte.seccion || 'Sin sección';
+            document.getElementById('report-referency').textContent = reporte.referencia || 'Sin referencia';
+            document.getElementById('report-description').textContent = reporte.descripcion || 'Sin descripción';
+            
+            // Finalmente, muestra el panel.
+            openPanel();
+          })
+          .catch(error => {
+            console.error('Error al obtener detalles del reporte:', error);
+            alert('No se pudieron cargar los detalles del reporte.');
+          });
+      }
+    });
+  }
+});

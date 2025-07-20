@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch('http://107.22.248.129:7001/mensajes-admin')
     .then(res => res.json())
     .then(data => {
+      console.log('AVISOS RECIBIDOS:', data.map(a => a.id)); // Mostrar ids
       avisos = data;
       mostrarAvisos('todos');
     })
@@ -43,24 +44,40 @@ document.addEventListener('DOMContentLoaded', () => {
       return true;
     });
 
+    // 🔽 Ordenar por ID descendente (más reciente primero)
+    filtrados.sort((a, b) => {
+      const idA = Number(a.id) || 0;
+      const idB = Number(b.id) || 0;
+      return idB - idA;
+    });
+
+    console.log('ORDENADOS POR ID ↓↓↓:', filtrados.map(a => a.id));
+
     if (filtrados.length === 0) {
       noticesList.innerHTML = '<p class="text-center text-muted">No hay avisos disponibles.</p>';
       return;
     }
 
     filtrados.forEach(aviso => {
-      const descripcion = aviso.descripcion || 'Sin descripción';
+      const descripcion = aviso.contenido || 'Sin descripción';
+      const autor = aviso.autor || 'Administrador';
+      const titulo = aviso.titulo || 'Sin título';
+      const fecha = formatearFecha(aviso.fecha);
+      const id = aviso.id || '?';
+
       const avisoHTML = `
         <article class="notice-item">
           <div class="notice-title">
-            <h4><i class="fa-solid fa-user-shield"></i> ${aviso.autor}</h4>
+            <h4><i class="fa-solid fa-user-shield"></i> ${autor} </h4>
           </div>
-          <h5>${aviso.titulo || 'Sin título'}</h5>
+          <h5>${titulo}</h5>
           <p>${recortarTexto(descripcion)} <a href="#">Leer más</a></p>
-          <time>${formatearFecha(aviso.fecha)}</time>
+          <time>${fecha}</time>
         </article>
       `;
-      noticesList.insertAdjacentHTML('beforeend', avisoHTML);
+
+      // ✅ Insertar al principio para que el más nuevo quede arriba
+      noticesList.insertAdjacentHTML('afterbegin', avisoHTML);
     });
   }
 
@@ -83,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function formatearFecha(fecha) {
     if (!fecha) return 'Fecha no disponible';
     const opciones = { day: 'numeric', month: 'short', year: 'numeric' };
-    return new Date(fecha).toLocaleDateString('es-MX', opciones);
+    const fechaObj = new Date(fecha);
+    return isNaN(fechaObj) ? 'Fecha no válida' : fechaObj.toLocaleDateString('es-MX', opciones);
   }
 });
