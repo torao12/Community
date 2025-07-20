@@ -34,8 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Estados de los reportes
     const estados = {
       1: 'Pendiente',
-      2: 'En proceso',
-      3: 'Resuelto'
+      2: 'Resuelto',
     };
 
     // Tipos de incidente

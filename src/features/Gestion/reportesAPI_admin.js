@@ -1,6 +1,6 @@
 //ver reportes en vista de admin
 document.addEventListener('DOMContentLoaded', () =>{
-    fetch('http://localhost:7001/reportes')
+    fetch('http://107.22.248.129:7001/reportes')
     .then (response => response.json())
     .then (reportes => {
         const contenedor = document.getElementById('report-row');
@@ -50,7 +50,7 @@ document.addEventListener('click', function (e){
         const id= target.getAtribute('data-id');
 
         //obtener los datos del reporte individual
-        fetch('http://localhost:7001/reportes/{id}')
+        fetch('http://107.22.248.129:7001/reportes/{id}')
         .then (response => response.json())
         .then (reporte => {
             //mostrar el aside
@@ -82,7 +82,7 @@ document.addEventListener('click', function(e) {
         const id = btn.getAtribute ('data-id');
 
         if(confirm ('¿Estas seguro de que deseas eliminar este reporte?')){
-            fetch('http://localhost:7001/reportes{id}', {
+            fetch('http://107.22.248.129:7001/reportes{id}', {
                 method: 'DELETE'
             })
             .then (response => {
