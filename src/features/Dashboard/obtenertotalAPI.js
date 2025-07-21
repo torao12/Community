@@ -21,24 +21,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    fetch('http://107.22.248.129:7001/reportes')
+    fetch('http://107.22.248.129:7001/reportes/resueltos/total')
         .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
             return response.json();
         })
-        .then(reportes => {
-            console.log('Lista completa de reportes:', reportes);
+        .then(data => {
+            console.log('Total de reportes resueltos recibido:', data);
 
-            // Reportes con id_estado === 2, sin importar 'activo'
-            const reportesResueltos = reportes.filter(r => r.id_estado === 2);
+            // Verifica y asigna el valor recibido
+            const resueltos = data.resueltos !== undefined ? data.resueltos : 'No disponible';
 
-            console.log('Reportes resueltos (sin filtrar activo):', reportesResueltos.length);
-
-            // Actualiza la tarjeta con el total de resueltos
-            document.getElementById('reportes-atendidos').textContent = reportesResueltos.length;
+            // Muestra el total de reportes resueltos en el HTML
+            document.getElementById('reportes-atendidos').textContent = resueltos;
         })
         .catch(error => {
-            console.error('Error al obtener reportes resueltos:', error);
+            console.error('Error al obtener el total de reportes resueltos:', error);
             document.getElementById('reportes-atendidos').textContent = 'Error';
         });
 });
