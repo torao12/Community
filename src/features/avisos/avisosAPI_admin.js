@@ -1,130 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const createNoticeBtn = document.getElementById('create-notice-btn');
-    const createNoticeModal = document.getElementById('crear-anuncio');
-    const createNoticeForm = document.getElementById('crear-anuncio-form');
-    const avisosGrid = document.getElementById('avisos-grid');
-
-    // Función que sincroniza id_admin con id_usuario si id_admin no existe
-    function sincronizarIdAdminConUsuario() {
-        const idUsuario = localStorage.getItem('id_usuario');
-        const idAdmin = localStorage.getItem('id_admin');
-
-        if (!idAdmin && idUsuario) {
-            localStorage.setItem('id_admin', idUsuario);
-            console.log(`id_admin no existía y se asignó el valor de id_usuario: ${idUsuario}`);
-        }
-    }
-
-    // Función para obtener id_admin desde localStorage
-    function obtenerIdAdmin() {
-        const id = localStorage.getItem('id_admin');
-        return id ? Number(id) : null;
-    }
-
-    function mostrarAlerta(mensaje, tipo = 'info') {
-        console.log(`[${tipo.toUpperCase()}] ${mensaje}`);
-        alert(mensaje);
-    }
-
-    sincronizarIdAdminConUsuario();
-
-    if (createNoticeBtn && createNoticeModal) {
-        createNoticeBtn.addEventListener('click', () => {
-            createNoticeModal.classList.add('show');
-        });
-    }
-
-    const closeModalBtns = createNoticeModal.querySelectorAll('.close-modal-btn');
-    closeModalBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            createNoticeModal.classList.remove('show');
-            createNoticeForm.reset();
-        });
-    });
-
-    if (createNoticeForm && avisosGrid && createNoticeModal) {
-        createNoticeForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            const titulo = document.getElementById('anuncio-titulo').value.trim();
-            const contenido = document.getElementById('anuncio-descripcion').value.trim();
-            const idAdmin = obtenerIdAdmin();
-
-            if (!titulo || !contenido) {
-                mostrarAlerta('Por favor, completa todos los campos.', 'error');
-                return;
-            }
-
-            if (!idAdmin) {
-                mostrarAlerta('No se encontró el ID de administrador. Por favor inicia sesión nuevamente.', 'error');
-                return;
-            }
-
-            const payload = {
-                titulo,
-                contenido,
-                id_admin: idAdmin
-            };
-
-            console.log('Enviando datos al backend:', payload);
-
-            try {
-                const response = await fetch('http://107.22.248.129:7001/mensajes-admin', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.text();
-                console.log('Respuesta del servidor:', result);
-
-                if (!response.ok) {
-                    mostrarAlerta('Error al crear el aviso: ' + result, 'error');
-                    return;
-                }
-
-                const newNoticeCard = document.createElement('div');
-                newNoticeCard.className = 'col-12 col-md-6 col-lg-4';
-                newNoticeCard.dataset.title = titulo;
-                newNoticeCard.innerHTML = `
-                    <div class="card notice-card h-100">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="fa-solid fa-user-shield notice-author-icon"></i>
-                                <span class="notice-author">Administrador</span>
-                            </div>
-                            <h5 class="card-title">${titulo}</h5>
-                            <p class="card-text">${contenido} <a href="#" class="leer-mas-link" data-titulo="${encodeURIComponent(titulo)}" data-contenido="${encodeURIComponent(contenido)}">Leer más</a></p>
-                        </div>
-                        <div class="card-footer notice-card-footer">
-                            <div class="d-flex align-items-center text-muted">
-                                <i class="fa-regular fa-calendar me-2"></i>
-                                <small>${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</small>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                avisosGrid.prepend(newNoticeCard);
-                createNoticeForm.reset();
-                createNoticeModal.classList.remove('show');
-                mostrarAlerta('Aviso creado con éxito.', 'success');
-
-                activarModalLeerMas(); // Re-activar modal en nuevo aviso
-
-            } catch (error) {
-                console.error('Error de red:', error);
-                mostrarAlerta('No se pudo conectar con el servidor.', 'error');
-            }
-
-            // Refrescar después de 1.5 segundos
-            setTimeout(() => {
-              location.reload();
-            }, 1500);
-        });
-    }
-});
-
 // Función para mostrar los avisos con modal "Leer más"
 async function cargarAnuncios() {
   const container = document.getElementById('avisos-grid');
@@ -135,11 +8,11 @@ async function cargarAnuncios() {
     if (!response.ok) throw new Error('Error al obtener los anuncios');
     const anuncios = await response.json();
 
-    // Ordenar por fecha descendente
+    // Ordenar por id descendente
     anuncios.sort((a, b) => {
-      const fechaA = new Date(a.fecha || a.createdAt || 0).getTime();
-      const fechaB = new Date(b.fecha || b.createdAt || 0).getTime();
-      return fechaB - fechaA;
+      const idA = a.id ?? a.id_mensaje ?? a.id_aviso ?? 0;
+      const idB = b.id ?? b.id_mensaje ?? b.id_aviso ?? 0;
+      return idB - idA; // orden descendente
     });
 
     anuncios.forEach(anuncio => {

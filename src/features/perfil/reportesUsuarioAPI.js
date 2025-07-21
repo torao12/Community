@@ -1,18 +1,21 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const contenedorReportes = document.getElementById('reports-grid');
-  const paginacionComponent = document.querySelector('dynamic-pagination');
   const idUsuario = localStorage.getItem('id_usuario');
-  const LIMIT = 9;
 
   if (!idUsuario) {
     contenedorReportes.innerHTML = '<p>Por favor inicia sesión para ver tus reportes.</p>';
     return;
   }
 
-  const estados = { 1: 'Pendiente', 2: 'Resuelto' };
+  const estados = { 1: 'Pendiente', 2: 'Resuelto', 3: 'En proceso' };
   const incidentes = {
-    1: "Ruido excesivo", 2: "Problema de alcohol", 3: "Basura",
-    4: "Asalto", 5: "Alumbrado Público", 6: "Fuga de agua", 7: "Drenaje tapado"
+    1: "Ruido excesivo",
+    2: "Problema de alcohol",
+    3: "Basura",
+    4: "Asalto",
+    5: "Alumbrado Público",
+    6: "Fuga de agua",
+    7: "Drenaje tapado"
   };
 
   let calles = [], secciones = [], ubicaciones = [], usuarios = [];
@@ -39,11 +42,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!ubicacion) return 'Sección desconocida';
     const seccion = secciones.find(s => s.id_seccion === ubicacion.id_seccion);
     if (!seccion) return 'Sección desconocida';
-
-    // Mapeo personalizado
     if (seccion.id_seccion === 1) return 'Sección 3';
     if (seccion.id_seccion === 2) return 'Sección 4';
-
     return `Sección ${seccion.id_seccion}`;
   }
 
@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return usuario ? usuario.nombre : `Usuario #${id_usuario}`;
   }
 
-  // Función para obtener ruta de avatar según si el usuario es admin
   function obtenerRutaAvatar(id_usuario) {
     const usuario = usuarios.find(u => u.id_usuario === id_usuario);
     if (!usuario) {
@@ -64,34 +63,84 @@ document.addEventListener('DOMContentLoaded', async () => {
       : '/Proyect-web/img/icono_usuario.png';
   }
 
-  async function cargarTotalReportes() {
-    const res = await fetch('http://107.22.248.129:7001/reportes/total');
-    const data = await res.json();
-    return typeof data === 'number' ? data : data.total || 0;
+  function formatearFecha(fechaStr) {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
-  async function cargarReportesPagina(pagina) {
+  function cargarDatosUsuarioEnUI(idUsuario) {
+    const usuario = usuarios.find(u => u.id_usuario === Number(idUsuario));
+    if (!usuario) {
+      console.warn('Usuario no encontrado para mostrar en UI');
+      return;
+    }
+
+    const userNameEl = document.querySelector('.user-data .user-name');
+    const userEmailEl = document.querySelector('.user-data .user-email');
+    const userRoleEl = document.querySelector('.user-data .user-role');
+
+    const nombreCompleto = [
+      usuario.nombre || '',
+      usuario.apellido_paterno || '',
+      usuario.apellido_materno || ''
+    ].filter(Boolean).join(' ');
+
+    if (userNameEl) userNameEl.textContent = nombreCompleto || 'Nombre no disponible';
+    if (userEmailEl) userEmailEl.textContent = usuario.correo || 'Correo no disponible';
+    if (userRoleEl) {
+      userRoleEl.textContent = usuario.es_admin === true ? 'Administrador' : 'Colono';
+    }
+  }
+
+  function activarModalLeerMas() {
+    if (!document.getElementById('modal-leer-mas')) {
+      const modal = document.createElement('div');
+      modal.id = 'modal-leer-mas';
+      modal.className = 'modal-overlay';
+      modal.style.display = 'none';
+      modal.innerHTML = `
+        <div class="modal-content" style="margin: auto; max-width: 500px; margin-top: 10rem;">
+          <h3>Descripción completa</h3>
+          <p id="modal-descripcion"></p>
+          <button id="cerrar-modal-leer-mas" class="btn btn-secondary">Cerrar</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.getElementById('cerrar-modal-leer-mas').addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+    }
+
+    document.querySelectorAll('.read-more').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const textoCompleto = decodeURIComponent(e.target.dataset.descripcion);
+        document.getElementById('modal-descripcion').textContent = textoCompleto;
+        document.getElementById('modal-leer-mas').style.display = 'block';
+      });
+    });
+  }
+
+  async function cargarReportesUsuario() {
     contenedorReportes.innerHTML = '<p>Cargando reportes...</p>';
     try {
-      const response = await fetch(`http://107.22.248.129:7001/reportes?page=${pagina}&limit=${LIMIT}`);
-      if (!response.ok) throw new Error('Error al obtener reportes paginados');
+      const response = await fetch(`http://107.22.248.129:7001/reportes/usuario?id_usuario=${idUsuario}`);
+      if (!response.ok) throw new Error('Error al obtener los reportes del usuario');
+
       const reportes = await response.json();
-
-      contenedorReportes.innerHTML = '';
-
-      const listaReportes = Array.isArray(reportes) ? reportes : (reportes.reportes || []);
-      const reportesActivos = listaReportes.filter(r => r.activo !== false);
+      const reportesActivos = reportes
+        .filter(r => r.activo !== false)
+        .sort((a, b) => b.id_reporte - a.id_reporte); // Orden descendente por ID
 
       if (reportesActivos.length === 0) {
-        contenedorReportes.innerHTML = '<p>No hay reportes disponibles en esta página.</p>';
+        contenedorReportes.innerHTML = '<p>No tienes reportes activos.</p>';
         return;
       }
 
-      reportesActivos.forEach(rep => {
-        const fecha = new Date(rep.fecha_creacion).toLocaleDateString('es-MX', {
-          day: '2-digit', month: 'short', year: 'numeric'
-        });
+      contenedorReportes.innerHTML = '';
 
+      reportesActivos.forEach(rep => {
+        const fecha = formatearFecha(rep.fecha_creacion);
         const estadoTexto = estados[rep.id_estado] || 'Desconocido';
         const estadoClase =
           estadoTexto === 'Resuelto' ? 'tag-resolved' :
@@ -131,55 +180,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (err) {
       contenedorReportes.innerHTML = `<p>Error: ${err.message}</p>`;
-      console.error('❌ Error en cargarReportesPagina:', err);
+      console.error('❌ Error en cargarReportesUsuario:', err);
     }
-
-    paginacionComponent.setAttribute('current-page', pagina);
   }
-
-  function activarModalLeerMas() {
-    if (!document.getElementById('modal-leer-mas')) {
-      const modal = document.createElement('div');
-      modal.id = 'modal-leer-mas';
-      modal.className = 'modal-overlay';
-      modal.style.display = 'none';
-      modal.innerHTML = `
-        <div class="modal-content" style="margin: auto; max-width: 500px; margin-top: 10rem;">
-          <h3>Descripción completa</h3>
-          <p id="modal-descripcion"></p>
-          <button id="cerrar-modal-leer-mas" class="btn btn-secondary">Cerrar</button>
-        </div>
-      `;
-      document.body.appendChild(modal);
-      document.getElementById('cerrar-modal-leer-mas').addEventListener('click', () => {
-        modal.style.display = 'none';
-      });
-    }
-
-    document.querySelectorAll('.read-more').forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        const textoCompleto = decodeURIComponent(e.target.dataset.descripcion);
-        document.getElementById('modal-descripcion').textContent = textoCompleto;
-        document.getElementById('modal-leer-mas').style.display = 'block';
-      });
-    });
-  }
-
-  paginacionComponent.addEventListener('page-change', e => {
-    const pagina = e.detail.page;
-    cargarReportesPagina(pagina);
-  });
 
   try {
     await cargarDatosIniciales();
-    const total = await cargarTotalReportes();
-    const totalPaginas = Math.ceil(total / LIMIT);
-    paginacionComponent.setAttribute('total-pages', totalPaginas);
-    paginacionComponent.setAttribute('current-page', 1);
-    await cargarReportesPagina(1);
+    cargarDatosUsuarioEnUI(idUsuario);
+    await cargarReportesUsuario();
   } catch (error) {
-    console.error('❌ Error al inicializar la vista:', error);
-    contenedorReportes.innerHTML = `<p>Error al cargar los reportes: ${error.message}</p>`;
+    contenedorReportes.innerHTML = `<p>Error al cargar los datos: ${error.message}</p>`;
+    console.error('❌ Error al inicializar:', error);
   }
 });

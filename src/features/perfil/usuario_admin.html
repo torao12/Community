@@ -17,12 +17,13 @@
             <a href="../Reportes/index.html"><img src="/Proyect-web/img/img-2logo.PNG" alt="Community - Volver al inicio" width="125"></a>
         </div>
         <nav class="header__nav">
-            <a href="../Reportes/reportes.html" class="nav-button"><i class="fa-solid fa-chart-pie"></i> Reportes</a>
-            <a href="../Dashboard/actividad.html" class="nav-button"><i class="fa-solid fa-list-check"></i> Actividad</a>
+            <a href="../Gestion/index_admin.html" class="nav-button"><i class="fa-solid fa-chart-pie"></i> Reportes</a>
+            <a href="../avisos/avisos.html" class="nav-button"><i class="fa-solid fa-circle-exclamation"></i> Avisos</a>
+            <a href="../Dashboard/actividad_admin.html" class="nav-button"><i class="fa-solid fa-list-check"></i> Actividad</a>
         </nav>
         <div class="header__user-actions active">
             <a href="#" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i></a>
-            <a href="../perfil/usuario.html"><img src="../../../img/icono_user.png" alt="Avatar del usuario" class="user-avatar"></a>
+            <a href="../perfil/usuario.html"><img src="../../../img/icono_adm.png" alt="Avatar del usuario" class="user-avatar"></a>
         </div>
     </header>
 
@@ -38,8 +39,8 @@
             </div>
             <h1 class="titulo3">Mis reportes</h1>
             <div class="action-buttons2">
-                <button class="btn btn-primary" id="create-report-btn"><i class="fa-solid fa-plus"></i> Crear</button>
-                <button class="btn btn-secondary" id="show-notices-btn"><i class="fa-solid fa-bell"></i> Avisos</button>
+                <button class="btn btn-primary" id="create-report-btn"><i class="fa-solid fa-plus"></i> Crear Reporte</button>
+                <button class="btn btn-secondary" id="create-notice-btn"><i class="fa-solid fa-plus"></i> Crear Aviso</button>
             </div>
         </section>
 
@@ -131,28 +132,29 @@
     </div>
 </div>
 
-    <aside class="notices-panel" id="notices-panel">
-        <div class="panel-header">
-            <h3>Avisos para la comunidad</h3><button class="close-panel-btn" id="close-notices-btn">&times;</button>
+    <div class="modal-overlay" id="crear-anuncio">
+        <div class="modal-content">
+            <h2>Aviso a la comunidad</h2>
+            <form id="crear-anuncio-form" novalidate>
+                <div class="form-group">
+                    <label for="notice-title">Título</label>
+                    <input type="text" id="anuncio-titulo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="notice-description">Descripción</label>
+                    <textarea id="anuncio-descripcion" class="form-control" rows="4" required></textarea>
+                </div>
+                <div class="d-flex gap-3 mt-4">
+                    <button type="button" class="btn btn-secondary w-100 close-modal-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary w-100">Enviar</button>
+                </div>
+            </form>
         </div>
-        <nav class="panel-tabs"><button class="tab-button active">Todos</button><button class="tab-button">Actuales</button><button class="tab-button">Pasados</button></nav>
-        <div class="notices-list">
-            <article class="notice-item">
-                <div class="notice-title"><h4><i class="fa-solid fa-user-shield"></i> Administrador 1</h4><a href="#"><i class="fa-solid fa-chevron-right"></i></a></div><h5>Mantenimiento de alumbrado</h5><p>Se realizará mantenimiento preventivo a todos los postes de la calle Zafiro este sábado 8 de Junio... <a href="#">Leer más</a></p><time>8 de jun 2025</time>
-            </article>
-            <article class="notice-item">
-                <div class="notice-title"><h4><i class="fa-solid fa-user-shield"></i> Administrador 2</h4><a href="#"><i class="fa-solid fa-chevron-right"></i></a></div><h5>Corte de agua programado</h5><p>La compañia de agua realizará trabajos de mantenimiento que afectarán el suministro... <a href="#">Leer más</a></p><time>9 de jun 2025</time>
-            </article>
-             <article class="notice-item">
-                <div class="notice-title"><h4><i class="fa-solid fa-user-shield"></i> Protección Civil</h4><a href="#"><i class="fa-solid fa-chevron-right"></i></a></div><h5>Campaña de vacunación</h5><p>Jornada de vacunación contra la influenza en el parque central, no faltes... <a href="#">Leer más</a></p><time>10 de jun 2025</time>
-            </article>
-        </div>
-    </aside>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../perfil/index.js"></script>
     <script src="../Gestion/crearReporteAPI.js"></script>
-    <script src="../Reportes/avisosAPI.js"></script>
     <script src="../perfil/reportesUsuarioAPI.js"></script>
+    <script src="../avisos/crearAvisoAPI.js"></script>
 </body>
 </html>
