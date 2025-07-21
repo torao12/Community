@@ -53,10 +53,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       fetch('http://107.22.248.129:7001/calles')
     ]);
 
-    if (!seccionesRes.ok || !usuariosRes.ok || !ubicacionesRes.ok || !callesRes.ok) {
-      throw new Error('Error al obtener datos iniciales');
-    }
-
     const seccionesData = await seccionesRes.json();
     const usuariosData = await usuariosRes.json();
     const ubicacionesData = await ubicacionesRes.json();
@@ -97,11 +93,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     tablaContenedor.innerHTML = '<p>Cargando reportes...</p>';
 
     const response = await fetch(`http://107.22.248.129:7001/reportes?page=${pagina}&limit=${LIMIT}`);
-    if (!response.ok) {
-      tablaContenedor.innerHTML = '<p>Error al cargar reportes</p>';
-      return;
-    }
-
     const data = await response.json();
     const reportes = Array.isArray(data) ? data : data.reportes || [];
 
@@ -134,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       fila.className = 'report-row';
 
       fila.innerHTML = `
-        <button class="btn btn-secondary" id="show-reports-btn">RPT-${String(idReporte).padStart(3, '0')}</button>
+        <button class="btn btn-secondary show-report-btn" data-id="${idReporte}">RPT-${String(idReporte).padStart(3, '0')}</button>
         <div>${nombreUsuario}</div>
         <div class="status-cell"><span class="status-badge ${claseEstado}">${estadoTexto}</span></div>
         <div>${tipoTexto}</div>
@@ -149,16 +140,55 @@ document.addEventListener('DOMContentLoaded', async () => {
           <button class="btn btn-icon delete-report-btn" data-id="${idReporte}">
             <i class="fa-regular fa-trash-can"></i>
           </button>
-
-
-
         </div>
       `;
 
       tablaContenedor.appendChild(fila);
+
+      const btnMostrar = fila.querySelector('.show-report-btn');
+      btnMostrar.addEventListener('click', () => {
+        mostrarDetalleReporte(rep);
+        reportsPanel.classList.add('is-visible');
+        reportsPanel.classList.add('open');
+        togglePanel(); // actualiza clases del botón si tienes diseño dependiente
+      });
     });
 
     paginacionComponent.setAttribute('current-page', pagina);
+  }
+
+  function mostrarDetalleReporte(rep) {
+    const nombreUsuario = usuarios[rep.id_usuario] || 'Usuario';
+    const estadoTexto = estados[rep.id_estado] || 'Desconocido';
+    const claseEstado = clasesEstado[estadoTexto] || '';
+    const tipoTexto = tipos[rep.id_tipo] || 'Tipo desconocido';
+    const idUrgencia = urgenciaPorTipo[rep.id_tipo] || 3;
+    const urgenciaInfo = urgencias[idUrgencia];
+
+    const ubicacionObj = ubicaciones[rep.id_ubicacion];
+    const idCalle = ubicacionObj?.id_calle;
+    const nombreCalle = calles[idCalle] || 'Ubicación no disponible';
+
+    const idSeccion = ubicacionObj?.id_seccion;
+    const seccionTexto = secciones[idSeccion] || 'Sección desconocida';
+
+    document.getElementById('report-author').textContent = nombreUsuario;
+
+    const statusSpan = document.querySelector('.panel-status .status-badge');
+    statusSpan.textContent = estadoTexto;
+    statusSpan.className = `status-badge ${claseEstado}`;
+
+    document.getElementById('report-type').textContent = tipoTexto;
+
+    const urgencySpan = document.querySelector('.panel-urgency .urgency-badge');
+    urgencySpan.textContent = urgenciaInfo.texto;
+    urgencySpan.className = `urgency-badge ${urgenciaInfo.clase}`;
+
+    document.getElementById('report-location').textContent = nombreCalle;
+    document.getElementById('report-section').textContent = seccionTexto;
+
+    document.getElementById('report-referency').textContent = rep.referencia || 'Sin referencia';
+    document.getElementById('report-description').textContent = rep.descripcion || 'Sin descripción';
   }
 
   async function inicializarPaginacion() {
@@ -176,6 +206,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     paginacionComponent.setAttribute('current-page', pagina);
   });
+
+  // --- Panel de Reportes ---
+  const reportsPanel = document.getElementById('reports-panel');
+  const closeReportsBtn = document.getElementById('close-reports-btn');
+
+  if (reportsPanel && closeReportsBtn) {
+    const closePanel = () => {
+      reportsPanel.classList.remove('is-visible');
+      reportsPanel.classList.remove('open');
+      togglePanel();
+    };
+
+    closeReportsBtn.addEventListener('click', closePanel);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && reportsPanel.classList.contains('is-visible')) closePanel();
+    });
+  }
+
+  const btn = document.querySelector('.close-reports-btn');
+  const panel = document.querySelector('.reports-panel');
+  function togglePanel() {
+    if (panel?.classList.contains('open')) {
+      btn?.classList.add('panel-open');
+      btn?.classList.remove('panel-closed');
+    } else {
+      btn?.classList.add('panel-closed');
+      btn?.classList.remove('panel-open');
+    }
+  }
 
   try {
     await cargarDatosIniciales();
