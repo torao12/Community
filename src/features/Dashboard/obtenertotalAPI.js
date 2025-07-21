@@ -42,3 +42,24 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('reportes-atendidos').textContent = 'Error';
         });
 });
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const tiempoElemento = document.getElementById('tiempo-resolver');
+
+  try {
+    const response = await fetch('http://107.22.248.129:7001/reportes/tiempo-promedio');
+    
+    if (!response.ok) {
+      throw new Error(`Error al obtener el tiempo promedio: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const promedioHoras = data.promedio_horas;
+
+    tiempoElemento.textContent = `${promedioHoras} horas`;
+  } catch (error) {
+    console.error('Error al obtener el tiempo promedio:', error);
+    tiempoElemento.textContent = 'No disponible';
+  }
+});

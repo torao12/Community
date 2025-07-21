@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('AVISOS RECIBIDOS:', data.map(a => a.id)); // Mostrar ids
       avisos = data;
       mostrarAvisos('todos');
+      activarModalLeerMas(); // Activar modal tras cargar avisos
     })
     .catch(err => {
       console.error('Error al cargar avisos:', err);
@@ -44,14 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return true;
     });
 
-    // 🔽 Ordenar por ID descendente (más reciente primero)
+    // Ordenar por ID descendente (más reciente primero)
     filtrados.sort((a, b) => {
       const idA = Number(a.id) || 0;
       const idB = Number(b.id) || 0;
       return idB - idA;
     });
-
-    console.log('ORDENADOS POR ID ↓↓↓:', filtrados.map(a => a.id));
 
     if (filtrados.length === 0) {
       noticesList.innerHTML = '<p class="text-center text-muted">No hay avisos disponibles.</p>';
@@ -71,14 +70,18 @@ document.addEventListener('DOMContentLoaded', () => {
             <h4><i class="fa-solid fa-user-shield"></i> ${autor} </h4>
           </div>
           <h5>${titulo}</h5>
-          <p>${recortarTexto(descripcion)} <a href="#">Leer más</a></p>
+          <p>
+            ${recortarTexto(descripcion)} 
+            <a href="#" class="leer-mas-link" data-titulo="${encodeURIComponent(titulo)}" data-contenido="${encodeURIComponent(descripcion)}">Leer más</a>
+          </p>
           <time>${fecha}</time>
         </article>
       `;
 
-      // ✅ Insertar al principio para que el más nuevo quede arriba
       noticesList.insertAdjacentHTML('afterbegin', avisoHTML);
     });
+
+    activarModalLeerMas(); // Re-activar modal después de actualizar avisos
   }
 
   // --- Manejo de pestañas ---
@@ -102,5 +105,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const opciones = { day: 'numeric', month: 'short', year: 'numeric' };
     const fechaObj = new Date(fecha);
     return isNaN(fechaObj) ? 'Fecha no válida' : fechaObj.toLocaleDateString('es-MX', opciones);
+  }
+
+  // --- Modal "Leer más" ---
+  function activarModalLeerMas() {
+    // Crear el modal solo si no existe
+    if (!document.getElementById('modal-leer-mas')) {
+      const modal = document.createElement('div');
+      modal.id = 'modal-leer-mas';
+      modal.className = 'modal-overlay';
+      Object.assign(modal.style, {
+        display: 'none', // Inicia oculto
+        position: 'fixed',
+        top: 0, left: 0, width: '100%', height: '100%',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: '9999',
+      });
+
+      modal.innerHTML = `
+        <div class="modal-content" style="margin: auto; max-width: 500px; margin-top: 10rem; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+          <h3 id="modal-titulo" style="margin-bottom: 1rem;"></h3>
+          <p id="modal-descripcion" style="white-space: pre-line;"></p>
+          <button id="cerrar-modal-leer-mas" class="btn btn-secondary" style="margin-top: 1rem;">Cerrar</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      document.getElementById('cerrar-modal-leer-mas').addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+
+      modal.addEventListener('click', e => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+    }
+
+    // Eliminar listeners antiguos para evitar duplicados
+    document.querySelectorAll('.leer-mas-link').forEach(link => {
+      link.removeEventListener('click', abrirModal);
+      link.addEventListener('click', abrirModal);
+    });
+
+    // Función para abrir modal (declarada fuera para poder remover listener)
+    function abrirModal(e) {
+      e.preventDefault();
+      const link = e.currentTarget;
+      const titulo = decodeURIComponent(link.dataset.titulo || '');
+      const contenido = decodeURIComponent(link.dataset.contenido || '');
+      const modal = document.getElementById('modal-leer-mas');
+
+      document.getElementById('modal-titulo').textContent = titulo;
+      document.getElementById('modal-descripcion').textContent = contenido;
+      modal.style.display = 'flex';
+    }
   }
 });
