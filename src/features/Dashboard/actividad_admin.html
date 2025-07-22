@@ -21,7 +21,7 @@
             <a href="../Dashboard/actividad_admin.html" class="nav-button active"><i class="fa-solid fa-list-check"></i> Actividad</a>
         </nav>
         <div class="header__user-actions">
-            <a href="#" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i></a>
+             <a href="../../auth/login/Login.html" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i></a>
             <a href="../perfil/usuario_admin.html"><img src="../../../img/icono_adm.png" alt="Avatar del usuario" class="user-avatar"></a>
         </div>
     </header>
@@ -44,34 +44,27 @@
         </section>
 
         <section class="chart-container">
-            <div class="chart-header">
-                <h2 class="chart-title">Gráfica de Reportes</h2>
-                <div class="download-button">
-                    <button class="btn btn-tertiary" id="download-chart-btn"><i class="fa-solid fa-download"></i> Descargar</button>
-                </div>
-            </div>
-            <div class="chart-area">
-                <div class="y-axis">
-                    <span class="y-label-title">Reportes</span>
-                    <div class="y-labels">
-                        <span>40</span>
-                        <span>30</span>
-                        <span>20</span>
-                        <span>10</span>
-                        <span>0</span>
-                    </div>
-                </div>
-                <div class="plot-area" id="bar-chart">
-                    <!-- Las barras se llenan dinámicamente con JS -->
-                </div>
-            </div>
-            <div class="x-labels-row" id="x-labels-row">
-                <!-- Las etiquetas X se llenan dinámicamente con JS -->
-            </div>
-        </section>
-    </main>
+    <div class="chart-header">
+        <h2 class="chart-title">Gráfica de Reportes</h2>
+        <div class="download-button">
+            <button class="btn btn-tertiary" id="btn-descargar-reporte">
+                <i class="fa-solid fa-download"></i> Descargar
+            </button>
+        </div>
+    </div>
+
+    <div class="chart-area" style="position: relative; height: 400px; width: 100%;">
+        <canvas id="reportesChart" style="background-color: white;"></canvas>
+    </div>
+    <div id="contenido-pdf" style="display: none;"></div>
+</section>
+
+    </main>
     <script src="../Dashboard/obtenertotalAPI.js"></script>
     <script src="../Dashboard/actividadAPI.js"></script>
     <script src="../Dashboard/index.js"></script>
+    <script src="../Dashboard/chartConfig.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </body>
 </html>
