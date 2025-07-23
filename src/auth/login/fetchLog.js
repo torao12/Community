@@ -125,15 +125,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             localStorage.setItem("id_usuario", data.id);
             localStorage.setItem("usuario", JSON.stringify(data));
-            console.log("🆔 ID del usuario logueado:", data.id);
+            console.log("ID del usuario logueado:", data.id);
 
             mostrarMensaje('exito', '¡Inicio de sesión exitoso!');
 
             setTimeout(() => {
                 if (data.es_admin) {
-                    window.location.href = "/Proyect-web/src/features/Gestion/index_admin.html";
+                    window.location.href = "./src/features/Gestion/index_admin.html";
                 } else {
-                    window.location.href = "/Proyect-web/src/features/Reportes/reportes.html";
+                    window.location.href = "./src/features/Reportes/reportes.html";
                 }
             }, 2000);
 

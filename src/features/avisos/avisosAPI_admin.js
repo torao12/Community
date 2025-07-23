@@ -113,7 +113,6 @@ function activarModalLeerMas() {
     });
   }
 
-  // Agregar eventos a los enlaces "Leer más"
   document.querySelectorAll('.leer-mas-link').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();

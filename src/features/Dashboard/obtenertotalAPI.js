@@ -57,7 +57,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = await response.json();
     const promedioHoras = data.promedio_horas;
 
-    tiempoElemento.textContent = `${promedioHoras} horas`;
+    // Limitar a 2 decimales
+    const promedioFormateado = parseFloat(promedioHoras).toFixed(2);
+    
+    tiempoElemento.textContent = `${promedioFormateado} horas`;
   } catch (error) {
     console.error('Error al obtener el tiempo promedio:', error);
     tiempoElemento.textContent = 'No disponible';

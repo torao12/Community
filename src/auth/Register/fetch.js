@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       apellido_materno: apellido_materno,
       correo: correo,
       contraseña: password,
-      id_ubicacion: idUbicacionActual  // <-- Agrego id_ubicacion al objeto enviado
+      id_ubicacion: idUbicacionActual 
     };
 
     try {

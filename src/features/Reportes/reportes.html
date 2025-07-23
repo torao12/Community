@@ -15,7 +15,7 @@
 
     <header class="header">
         <div class="header__logo">
-            <a href="../Reportes/reportes.html"><img src="/Proyect-web/img/img-2logo.PNG" alt="Community - Volver al inicio" width="125"></a>
+            <a href="../Reportes/reportes.html"><img src="/Proyecto/Proyect-web/img/img-2logo.PNG" alt="Community - Volver al inicio" width="125"></a>
         </div>
         <nav class="header__nav">
             <a href="../Reportes/reportes.html" class="nav-button active"><i class="fa-solid fa-chart-pie"></i> Reportes</a>
@@ -23,7 +23,7 @@
         </nav>
         <div class="header__user-actions">
             <a href="../../auth/login/Login.html" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i></a>
-            <a href="../perfil/usuario.html"><img src="../../../img/icono_user.png" alt="Avatar del usuario" class="user-avatar"></a>
+            <a href="../perfil/usuario.html"><img src="/img/icono-usuario.png" alt="Avatar del usuario" class="user-avatar"></a>
         </div>
     </header>
  
@@ -31,24 +31,37 @@
         <section class="controls">
             <div class="search-container">
                 <button class="filter-button" id="filter-toggle">
-                    Filtros
-                    <i class="fa-solid fa-filter"></i>
+                  Filtros <i class="fa-solid fa-filter"></i>
                 </button>
                 <div class="filter-dropdown" id="filter-dropdown">
                     <div class="dropdown-item has-submenu">
                         <span>Estados <i class="fa-solid fa-chevron-right"></i></span>
-                        <div class="submenu"><a href="#" class="submenu-item">Pendiente</a><a href="#" class="submenu-item">En proceso</a><a href="#" class="submenu-item">Resuelto</a></div>
+                        <div class="submenu">
+                            <a href="1" class="submenu-item">Pendiente</a>
+                            <a href="2" class="submenu-item">Resuelto</a>
+                        </div>
                     </div>
                     <div class="dropdown-item has-submenu">
                         <span>Incidentes <i class="fa-solid fa-chevron-right"></i></span>
-                        <div class="submenu"><a href="#" class="submenu-item">Alumbrado público</a><a href="#" class="submenu-item">Fuga de agua</a><a href="#" class="submenu-item">Basura</a><a href="#" class="submenu-item">Asaltos</a></div>
+                        <div class="submenu">
+                        <a href="1" class="submenu-item">Ruido excesivo</a>
+                        <a href="2" class="submenu-item">Problemas de alcohol</a>
+                        <a href="3" class="submenu-item">Basura</a>
+                        <a href="4" class="submenu-item">Asaltos</a>
+                        <a href="5" class="submenu-item">Alumbrado público</a>
+                        <a href="6" class="submenu-item">Fuga de agua</a>
+                        <a href="7" class="submenu-item">Drenaje tapado</a>
+                    </div>
                     </div>
                     <div class="dropdown-item has-submenu">
                         <span>Secciones <i class="fa-solid fa-chevron-right"></i></span>
-                        <div class="submenu"><a href="#" class="submenu-item">Sección 3</a><a href="#" class="submenu-item">Sección 4</a></div>
+                        <div class="submenu">
+                        <a href="1" class="submenu-item">Sección 3</a>
+                        <a href="2" class="submenu-item">Sección 4</a></div>
                     </div>
                 </div>
             </div>
+            <button class="btn btn-secondary" id="limpiarFiltros"><i class="fa-solid fa-eraser"></i> limpiar</button>
             <h1 class="titulo">Reportes</h1>
             <div class="action-buttons">
                 <button class="btn btn-primary" id="create-report-btn"><i class="fa-solid fa-plus"></i> Crear</button>
@@ -136,7 +149,7 @@
    <script src="../Gestion/crearReporteAPI.js"></script>
     <script src="../perfil/index.js"></script>
     <script src="../Reportes/avisosAPI.js" type="module"></script>
-    <script src="../Reportes/reporteAPI.js" type="module"></script>
+    <script src="../Reportes/filtro.js" type="module"></script>
     <script type="module" src="../../Shared/Script/DynamicPagination.js"></script>
 </body>
 </html>

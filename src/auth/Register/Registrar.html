@@ -13,17 +13,17 @@
         <div class="loader"></div>
         <p>Cargando CommUnity...</p>
   </div>
-   <script src="/Proyect-web/src/Shared/Script/preloader.js"></script>
+   <script src="/src/Shared/Script/preloader.js"></script>
     <div class="container">
         <div class="left-section">
             <div class="image-container">
-                <img src="/Proyect-web/img/-secundary.jpg" alt="Ilustración de comunidad" class="main-image"/>
+                <img src="/img/-secundary.jpg" alt="Ilustración de comunidad" class="main-image"/>
             </div>
         </div>
         
         <div class="right-section" style="max-height: 100%;">
             <div class="logo">
-                <img src="/Proyect-web/img/logo_CommUnity.png" alt="Logo de Community" class="logo-image"/>
+                <img src="/img/logo_CommUnity.png" alt="Logo de Community" class="logo-image"/>
             </div>
     
             <div class="header">
@@ -40,27 +40,25 @@
             </div>
             <form class="formulario" id="formulario" method="POST" action="/Registrar">
 
-               <div class="formulario_grupo" id="group_seleccion">
-                <div class="formulario_select">
+    <div class="formulario_grupo" id="group_seleccion">
+       <div class="formulario_select-group">
+            <select name="seccion" id="seccion" class="formulario_select">
+             <option value="" selected disabled> Seccion</option>
+            </select>
+                <div class="formulario_validacion-estado" id="seccion_estado">
+                <p class="input-error"> selecciona una sección</p>
+            </div>
 
-                    <select name="seccion" id="seccion" class="formulario_input">
-                    <option value="" selected disabled>Seleccione una sección</option>
-                    <!-- Opciones se cargan dinámicamente -->
-                    </select>
-                    <div class="formulario_validacion-estado" id="seccion_estado">
-                    <p class="input-error">Selecciona una sección</p>
-                    </div>
+            <select name="calle" id="calle" class="formulario_select">
+                <option value="" selected disabled>Selecciona una calle</option>
+            </select>
+            <div class="formulario_validacion-estado" id="calle_estado">
+             <p class="input-error">Selecciona una calle</p>
+            </div>
 
-                    <select name="calle" id="calle" class="formulario_input">
-                    <option value="" selected disabled>Primero selecciona una sección</option>
-                    <!-- Opciones se cargan dinámicamente -->
-                    </select>
-                    <div class="formulario_validacion-estado" id="calle_estado">
-                    <p class="input-error">Selecciona una calle</p>
-                    </div>
+        </div>
+    </div>
 
-                </div>
-                </div>
                 
                 <div class="formulario_grupo" id="group_nombre">
                     <div class="formulario_input">

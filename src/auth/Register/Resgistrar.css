@@ -111,28 +111,28 @@ body {
     justify-content: center;
 }
 
-.formulario_select {
- display: grid;
- grid-template-columns: 1fr 1fr;
- gap: 1rem;
- align-items:center;
- justify-content: center;
+.formulario_select-group {
+  display: grid;
+  width: 100%;
+  align-items:center;
+  justify-content:center;
 }
 
-.formulario_select select {
-  width: 100%;
-  height: 40px;
-  padding: 8px 12px; /* Espaciado interno cómodo y texto visible */
+.formulario_select-group select {
+  width: 96%;
+  height: 48px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid #0B1956;
   background-color: white;
-  color: #0B1956; /* Asegura que el texto sea visible */
+  color: #0B1956;
   font-size: 16px;
   cursor: pointer;
+  margin: 5px;
 }
 
-
-.formulario_select select:focus {
+/* Enfoque */
+.formulario_select-group select:focus {
   outline: none;
   border-color: #2c5aa0;
   box-shadow: 0 0 0 4px rgba(44, 90, 160, 0.1);
@@ -152,11 +152,12 @@ body {
     color: #9ca3af;
     font-size: 16px;
     z-index: 1;
-    margin-top: 0;
+    margin-top: 4px;
 }
 
 .formulario_grupo input {
     width: 400px;
+    height: 48px;
     max-width: 100%;
     padding: 16px 16px 16px 48px;
     border: 1px solid #0B1956;
@@ -165,7 +166,7 @@ body {
     background-color: white;
     transition: all 0.3s ease;
     outline: none;
-    margin-top: 5px;
+    margin-top: 3px;
 }
 
 
@@ -266,6 +267,17 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    text-align: center;
+    width: 100%;
+}
+
+.formulario_select-group p{
+    margin: 0;
+    font-size: 14px;
+    gap: 8px;
+    display: flex;
+    text-align: center;
+    width: 38%;
 }
 
 .formulario-mensaje-exito {
@@ -291,6 +303,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+
 }
 
 /* Animaciones */

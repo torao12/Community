@@ -5,10 +5,10 @@ const expresiones = {
     nombre: /^[a-zA-ZÀ-ÿ\s]{1,18}$/,
     apellido_paterno: /^[a-zA-ZÀ-ÿ\s]{1,18}$/,
     apellido_materno: /^[a-zA-ZÀ-ÿ\s]{1,18}$/,
-    correo: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.com$/, // corregí la expresión con el punto escapado
-    password: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$/,
-    confirm_password: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$/,
-    seccion: /^[1-9][0-9]*$/, // Números mayores que cero
+    correo: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.com$/, 
+    password: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,15}$/,
+    confirm_password: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,15}$/,
+    seccion: /^[1-9][0-9]*$/, 
     calle: /^[1-9][0-9]*$/
 };
 

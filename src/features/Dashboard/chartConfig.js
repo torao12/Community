@@ -47,29 +47,33 @@ function inicializarGrafica() {
 
 async function cargarDatos() {
     try {
-        const [resumenRes, resueltosRes, graficaRes] = await Promise.all([
-            fetch('http://107.22.248.129:7001/reportes/estadisticas/resumen'),
-            fetch('http://107.22.248.129:7001/reportes/resueltos/total'),
-            fetch('http://107.22.248.129:7001/estadisticas/por-tipo') // ✅ nuevo endpoint
+        // Mantener los tres endpoints: estadísticas completas, resueltos y datos para gráfica
+        const [estadisticasRes, resueltosRes, graficaRes] = await Promise.all([
+            fetch('http://107.22.248.129:7001/reportes/estadisticas/resumen'), // Para PDF completo
+            fetch('http://107.22.248.129:7001/reportes/resueltos/total'),      // Para resueltos
+            fetch('http://107.22.248.129:7001/estadisticas/por-tipo')          // Para gráfica
         ]);
 
-        if (!resumenRes.ok) throw new Error('Fallo al obtener resumen');
+        if (!estadisticasRes.ok) throw new Error('Fallo al obtener estadísticas');
         if (!resueltosRes.ok) throw new Error('Fallo al obtener resueltos');
         if (!graficaRes.ok) throw new Error('Fallo al obtener datos de gráfica');
 
-        const resumen = await resumenRes.json();
+        const estadisticas = await estadisticasRes.json();
         const resueltos = await resueltosRes.json();
         const datosGrafica = await graficaRes.json();
 
+        // Usar los datos específicos del endpoint de gráfica para el chart
         const categorias = datosGrafica.map(item => item.tipo);
         const cantidades = datosGrafica.map(item => item.cantidad);
 
+        // Actualizar gráfica con datos del endpoint específico
         reportesChart.data.labels = categorias;
         reportesChart.data.datasets[0].data = cantidades;
         reportesChart.update();
 
+        // Configurar descarga de PDF con todos los datos (usar estadísticas completas)
         document.getElementById('btn-descargar-reporte').onclick = function () {
-            generarPDF(resumen, resueltos, categorias, cantidades);
+            generarPDF(estadisticas, resueltos);
         };
 
     } catch (error) {
@@ -92,7 +96,7 @@ window.addEventListener('beforeunload', () => {
     clearInterval(intervaloRefresco);
 });
 
-async function generarPDF(resumen, resueltos, categorias, cantidades) {
+async function generarPDF(estadisticas, resueltos) {
     try {
         if (!window.jspdf) {
             await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
@@ -118,108 +122,87 @@ async function generarPDF(resumen, resueltos, categorias, cantidades) {
 
         const formatData = (data) => {
             if (data === undefined || data === null) return 'N/A';
-            if (typeof data === 'object') {
-                if (data.tipo || data.cantidad) return '';
-                return Object.values(data).filter(val => val !== undefined).join(', ');
-            }
+            if (typeof data === 'number') return data.toLocaleString('es-MX');
             return data.toString();
         };
 
+        // Título principal
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(styles.title.size);
         doc.setTextColor(...styles.title.color);
-        doc.text('Reporte Estadístico de Reportes', pageWidth / 2, 20, styles.title);
+        doc.text('Reporte Estadístico de Reportes Ciudadanos', pageWidth / 2, 20, { align: 'center' });
         doc.setFont('helvetica', 'normal');
 
         let y = 35;
+
+        // === SECCIÓN 1: RESUMEN GENERAL ===
         doc.setFontSize(styles.subtitle.size);
         doc.setTextColor(...styles.subtitle.color);
-        doc.text('Resumen General', margin, y);
-        y += 10;
+        doc.text('1. Resumen General', margin, y);
+        y += 12;
 
         doc.setFontSize(styles.body.size);
         doc.setTextColor(...styles.body.color);
 
-        const filteredResumen = {
-            'Total Reportes (activos)': resumen.totalReportes || resumen.total,
-            'Reportes Resueltos': resumen.reportesResueltos || resumen.resueltos,
-            'Promedio Horas Resolución': resumen.promedioHorasResolucion
-        };
+        const resumenGeneral = [
+            ['Total de Reportes (General)', formatData(estadisticas.totalReportesGeneral)],
+            ['Reportes Activos', formatData(estadisticas.totalReportes)],
+            ['Reportes Resueltos', formatData(estadisticas.reportesResueltos)],
+            ['Promedio de Horas para Resolución', formatData(estadisticas.promedioHorasResolucion ? estadisticas.promedioHorasResolucion.toFixed(2) + ' horas' : 'N/A')]
+        ];
 
-        for (const [key, value] of Object.entries(filteredResumen)) {
-            const formattedValue = formatData(value);
-            if (formattedValue && formattedValue !== 'N/A') {
-                doc.text(`${key}: ${formattedValue}`, margin + 2, y);
+        resumenGeneral.forEach(([label, value]) => {
+            if (value && value !== 'N/A') {
+                doc.text(`${label}: ${value}`, margin + 2, y);
                 y += 8;
-                if (y > 260) {
-                    doc.addPage();
-                    y = 20;
-                }
             }
-        }
-
-        y += 10;
-        doc.setFontSize(styles.subtitle.size);
-        doc.setTextColor(...styles.subtitle.color);
-        doc.text('Distribución de Reportes (reportes inactivos y activos)', margin, y);
-        y += 10;
-
-        doc.setFontSize(styles.tableHeader.size);
-        const col1Width = maxWidth - 40;
-        const col2Width = 30;
-
-        doc.setFillColor(...styles.tableHeader.fill);
-        doc.rect(margin, y, col1Width + col2Width, 8, 'F');
-        doc.setTextColor(...styles.tableHeader.color);
-        doc.text('Categoría/Tipo', margin + 2, y + 6);
-        doc.text('Cantidad', margin + col1Width + 2, y + 6, { align: 'right' });
-
-        y += 8;
-        doc.setFontSize(styles.body.size);
-
-        categorias.forEach((cat, i) => {
-            if (y > 260) {
-                doc.addPage();
-                y = 20;
-                doc.setFontSize(styles.tableHeader.size);
-                doc.setFillColor(...styles.tableHeader.fill);
-                doc.rect(margin, y, col1Width + col2Width, 8, 'F');
-                doc.setTextColor(...styles.tableHeader.color);
-                doc.text('Categoría/Tipo', margin + 2, y + 6);
-                doc.text('Cantidad', margin + col1Width + 2, y + 6, { align: 'right' });
-                y += 8;
-                doc.setFontSize(styles.body.size);
-            }
-
-            const rowStyle = i % 2 === 0 ? styles.evenRow : styles.oddRow;
-            doc.setFillColor(...rowStyle.fill);
-            doc.rect(margin, y, col1Width + col2Width, 8, 'F');
-
-            doc.setTextColor(...styles.body.color);
-
-            const maxTextWidth = col1Width - 4;
-            const lines = doc.splitTextToSize(cat, maxTextWidth);
-
-            doc.text(lines[0], margin + 2, y + 6);
-
-            if (lines.length > 1) {
-                for (let j = 1; j < lines.length; j++) {
-                    y += 6;
-                    doc.setFillColor(...rowStyle.fill);
-                    doc.rect(margin, y, col1Width + col2Width, 8, 'F');
-                    doc.text(lines[j], margin + 2, y + 6);
-                }
-            }
-
-            doc.text(cantidades[i].toString(), margin + col1Width + 2, y + 6, { align: 'right' });
-            y += 8;
         });
 
+        y += 10;
+
+        // === SECCIÓN 2: REPORTES POR TIPO ===
+        doc.setFontSize(styles.subtitle.size);
+        doc.setTextColor(...styles.subtitle.color);
+        doc.text('2. Distribución por Tipo de Reporte (General)', margin, y);
+        y += 12;
+
+        if (estadisticas.reportesPorTipo && Object.keys(estadisticas.reportesPorTipo).length > 0) {
+            y = crearTabla(doc, estadisticas.reportesPorTipo, y, margin, maxWidth, styles, 'Tipo de Reporte', 'Cantidad');
+        } else {
+            doc.setFontSize(styles.body.size);
+            doc.setTextColor(...styles.body.color);
+            doc.text('No hay datos disponibles para esta sección.', margin + 2, y);
+            y += 10;
+        }
+
+        y += 15;
+
+        // === SECCIÓN 3: REPORTES POR SECCIÓN ===
+        if (y > 220) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.setFontSize(styles.subtitle.size);
+        doc.setTextColor(...styles.subtitle.color);
+        doc.text('3. Distribución por Sección/Zona (General)', margin, y);
+        y += 12;
+
+        if (estadisticas.reportesPorSeccion && Object.keys(estadisticas.reportesPorSeccion).length > 0) {
+            y = crearTabla(doc, estadisticas.reportesPorSeccion, y, margin, maxWidth, styles, 'Sección/Zona', 'Cantidad');
+        } else {
+            doc.setFontSize(styles.body.size);
+            doc.setTextColor(...styles.body.color);
+            doc.text('No hay datos disponibles para esta sección.', margin + 2, y);
+            y += 10;
+        }
+
+        // === SECCIÓN 4: GRÁFICA ===
         doc.addPage();
         y = 20;
         doc.setFontSize(styles.subtitle.size);
         doc.setTextColor(...styles.subtitle.color);
-        doc.text('Visualización Gráfica', pageWidth / 2, y, { align: 'center' });
+        doc.text('4. Visualización Gráfica - Reportes por Tipo', pageWidth / 2, y, { align: 'center' });
         y += 15;
 
         try {
@@ -248,18 +231,102 @@ async function generarPDF(resumen, resueltos, categorias, cantidades) {
             doc.text('No se pudo incluir la gráfica en el PDF', margin, y + 20);
         }
 
-        const fecha = new Date().toLocaleDateString('es-MX', {
+        // === PIE DE PÁGINA CON FECHA ===
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            
+            const fecha = new Date().toLocaleDateString('es-MX', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            doc.text(`Generado el: ${fecha}`, margin, doc.internal.pageSize.getHeight() - 10);
+            doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+        }
+
+        const fechaArchivo = new Date().toLocaleDateString('es-MX', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
         }).replace(/\//g, '-');
 
-        doc.save(`Reporte_Estadistico_${fecha}.pdf`);
+        doc.save(`Reporte_Estadistico_Completo_${fechaArchivo}.pdf`);
 
     } catch (error) {
         console.error('Error al generar el PDF:', error);
         alert('Ocurrió un error al generar el reporte. Por favor intente nuevamente.');
     }
+}
+
+function crearTabla(doc, datos, startY, margin, maxWidth, styles, headerCol1, headerCol2) {
+    let y = startY;
+    const col1Width = maxWidth - 50;
+    const col2Width = 40;
+
+    // Header de tabla
+    doc.setFontSize(styles.tableHeader.size);
+    doc.setFillColor(...styles.tableHeader.fill);
+    doc.rect(margin, y, col1Width + col2Width, 8, 'F');
+    doc.setTextColor(...styles.tableHeader.color);
+    doc.text(headerCol1, margin + 2, y + 6);
+    doc.text(headerCol2, margin + col1Width + 2, y + 6, { align: 'right' });
+
+    y += 8;
+    doc.setFontSize(styles.body.size);
+
+    // Filas de datos
+    const entries = Object.entries(datos);
+    entries.forEach(([key, value], i) => {
+        // Verificar si necesita nueva página
+        if (y > 260) {
+            doc.addPage();
+            y = 20;
+            // Repetir header en nueva página
+            doc.setFontSize(styles.tableHeader.size);
+            doc.setFillColor(...styles.tableHeader.fill);
+            doc.rect(margin, y, col1Width + col2Width, 8, 'F');
+            doc.setTextColor(...styles.tableHeader.color);
+            doc.text(headerCol1, margin + 2, y + 6);
+            doc.text(headerCol2, margin + col1Width + 2, y + 6, { align: 'right' });
+            y += 8;
+            doc.setFontSize(styles.body.size);
+        }
+
+        // Alternar colores de fila
+        const rowStyle = i % 2 === 0 ? styles.evenRow : styles.oddRow;
+        doc.setFillColor(...rowStyle.fill);
+        doc.rect(margin, y, col1Width + col2Width, 8, 'F');
+
+        doc.setTextColor(...styles.body.color);
+
+        // Manejar texto largo en la primera columna
+        const maxTextWidth = col1Width - 4;
+        const lines = doc.splitTextToSize(key, maxTextWidth);
+
+        doc.text(lines[0], margin + 2, y + 6);
+
+        // Si el texto requiere múltiples líneas
+        if (lines.length > 1) {
+            for (let j = 1; j < lines.length; j++) {
+                y += 6;
+                doc.setFillColor(...rowStyle.fill);
+                doc.rect(margin, y, col1Width + col2Width, 8, 'F');
+                doc.text(lines[j], margin + 2, y + 6);
+            }
+        }
+
+        // Valor en segunda columna
+        doc.text(value.toString(), margin + col1Width + 2, y + 6, { align: 'right' });
+        y += 8;
+    });
+
+    return y;
 }
 
 function loadScript(src) {
