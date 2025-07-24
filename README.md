@@ -9,7 +9,7 @@ Community Opinion es una plataforma web diseñada para mejorar la comunicación 
 * Fortalecimiento del tejido social y la transparencia.
 * Modelo replicable en otras colonias o comunidades.
 
-#Contribuidores
+# Contribuidores
 * Guzmán López Angel Eduardo 
 * Prado Gordillo Mishell 
 * Ríos Cristóbal Luis Ali 
